@@ -27,7 +27,7 @@ int main(int argc, char **argv)
     MPI_Comm_size(MPI_COMM_WORLD, &nthreads);
     
     double NSlocal = xmax/nthreads;
-    double valorlocal = 0, *data = 0, integral = 0;
+    double valorlocal = 0, *data = 0;
     
     auto start  = std::chrono::steady_clock::now();
     valorlocal = simpson(f,NSlocal*pid,NSlocal*(pid+1),N/nthreads);

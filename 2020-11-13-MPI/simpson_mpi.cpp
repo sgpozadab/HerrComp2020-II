@@ -7,8 +7,9 @@
 using fptr  = double(double);
 
 void print_elapsed(auto start, auto end);
+void suma(double *data, int NSlocal, int pid, int nproc, double vl);
 double f(double x);
-double simpson(fptr fun, double a, double b);
+double simpson(fptr fun, double a, double b, int N);
 
 const int N = 6000000;
 const double xmin = 0.0;
@@ -16,33 +17,31 @@ const double xmax = 100.0;
 
 int main(int argc, char **argv)
 {
+
+  std::cout.precision(15); std::cout.setf(std::ios::scientific);
+    
     MPI_Init(&argc, &argv);
     int pid = 0, nthreads = 0;
 
     MPI_Comm_rank(MPI_COMM_WORLD, &pid);
     MPI_Comm_size(MPI_COMM_WORLD, &nthreads);
     
-    /*const int NSlocal = N/nthreads;
-    double * data = new double [nthreads] {0.0};
-
-
-    for (int ilocal = 0; ilocal < NSlocal; ++ilocal) {
-      data[ilocal] = simpson(f,)
-      }*/
-
+    double NSlocal = xmax/nthreads;
+    double valorlocal = 0, *data = 0, integral = 0;
     
-    std::cout.precision(15); std::cout.setf(std::ios::scientific);
-
     auto start  = std::chrono::steady_clock::now();
-    double integral  = simpson(f, xmin, xmax);
+    valorlocal = simpson(f,NSlocal*pid,NSlocal*(pid+1),N/nthreads);
+    data = &valorlocal;
     auto end  = std::chrono::steady_clock::now();
     
-    std::cout << "tiempo:\t";
+    std::cout << "pid: " << pid << "\n"
+	      << "valorlocal: " << *data << "\n" << "tiempo:\t";
     print_elapsed(start, end);
-
-    std::cout << "valor de la integral:\t" << integral << '\n';
+    std::cout << "\n\n";
+    suma(data, NSlocal, pid, nthreads, valorlocal);
 
     MPI_Finalize();
+    
     return 0;
 }
 
@@ -52,18 +51,13 @@ double f(double x)
 }
 
 
-double simpson(fptr fun, double a, double b)
+double simpson(fptr fun, double a, double b, int N)
 {
 
     const double h = (b-a)/N;
     double suma = 0;
     double aux1 = 0, aux2 = 0;
  
-    //int tid = omp_get_thread_num();
-    //int SL = N/nthreads;
-    
-    //#pragma omp parallel for num_threads (nthreads) reduction(+:aux1,aux2)
-    
       for(int ii = 1; ii <= N/2 - 1; ++ii) {
         double x = a + 2*ii*h;
         aux1 += fun(x);
@@ -80,4 +74,23 @@ double simpson(fptr fun, double a, double b)
 void print_elapsed(auto start, auto end)
 {
   std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count()/1000.0 << "\n";
+}
+
+
+void suma(double *data, int NSlocal, int pid, int nproc, double vl)
+{
+  int tag = 0;
+  double sum = 0.0;
+  if (0 == pid) {
+    sum = vl;
+    double aux;
+    for (int src = 1; src < nproc; ++src) {
+      MPI_Recv(&aux, 1, MPI_DOUBLE, src, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+      sum += aux;
+    }
+    std::cout << "valor de la integral:\t" << sum << '\n';
+  } else {
+    int dest = 0;
+    MPI_Send(data, 1, MPI_DOUBLE, dest, tag, MPI_COMM_WORLD);
+  }
 }

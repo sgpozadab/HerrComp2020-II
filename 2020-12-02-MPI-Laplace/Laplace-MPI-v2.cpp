@@ -4,7 +4,7 @@
 
 const double DELTA = 0.1;
 const double XMIN = 0.0;
-const double XMAX = 1.0;
+const double XMAX = 1.2;
 const double YMIN = 0.0;
 const double YMAX = 1.2;
 const int NX = (XMAX-XMIN)/DELTA;
@@ -24,7 +24,6 @@ void evolve(data_t & data, int nx, int ny, int nsteps, int pid, int np);
 
 // serial functions
 void print_screen(const data_t & data, int nx, int ny);
-
 
 
 int main(int argc, char **argv)
@@ -66,13 +65,13 @@ void boundary_conditions(data_t & data, int nx, int ny, int pid, int np)
   int ix, iy;
     // first column
     iy = 0;
-    for(int ix = 0; ix < nx; ++ix) {
-        data[ix*ny + iy] = 0.0;
+    for(int ix = 0; ix < nx+2; ++ix) {
+        data[ix*ny + iy] = 1.0;
     }
     // last column
     iy = ny-1;
-    for(int ix = 0; ix < nx; ++ix) {
-        data[ix*ny + iy] = 0.0;
+    for(int ix = 0; ix < nx+2; ++ix) {
+        data[ix*ny + iy] = 1.0;
     }
     //first row
     if(0 == pid){
@@ -85,7 +84,7 @@ void boundary_conditions(data_t & data, int nx, int ny, int pid, int np)
     if(np-1 == pid){
       ix = (nx+1)-1;
       for(int iy = 0; iy < ny; ++iy) {
-        data[ix*ny + iy] = 0.0;
+        data[ix*ny + iy] = 2.0;
       }
     }
 }
@@ -148,7 +147,7 @@ void relaxation_step(data_t & data, int nx, int ny, int pid, int np)
 
 void print_screen(const data_t & data, int nx, int ny)
 {
-    for(int ix = 0; ix < nx; ++ix) {
+    for(int ix = 0; ix < nx+2; ++ix) {
         for(int iy = 0; iy < ny; ++iy) {
             std::cout << data[ix*ny + iy] << "  ";
         }

@@ -4,9 +4,9 @@
 
 const double DELTA = 0.1;
 const double XMIN = 0.0;
-const double XMAX = 1.2;
+const double XMAX = 1.0;
 const double YMIN = 0.0;
-const double YMAX = 1.2;
+const double YMAX = 1.0;
 const int NX = (XMAX-XMIN)/DELTA;
 const int NY = (YMAX-YMIN)/DELTA;
 const int NSTEPS = 1;
@@ -40,10 +40,10 @@ int main(int argc, char **argv)
 
     // set initial and boundary conditions
     boundary_conditions(potential, NXlocal, NY, pid, nproc);
-    //print_screen(potential, NXlocal+2, NY, pid, nproc);
+    print_screen(potential, NXlocal, NY, pid, nproc);
 
     // evolve and print
-    evolve(potential, NXlocal, NY, NSTEPS, pid, nproc);
+    //evolve(potential, NXlocal, NY, NSTEPS, pid, nproc);
 
     // close mpi environment
     MPI_Finalize();

@@ -15,6 +15,7 @@ typedef std::vector<double> data_t;
 
 // parallel functions
 void initial_conditions(data_t & data, int nx, int ny, int pid, int np);
+void boundary_conditions(data_t & data, int nx, int ny, int pid, int np);
 void print_screen(const data_t & data, int nx, int ny, int pid, int nproc);
 
 // serial functions
@@ -40,7 +41,7 @@ int main(int argc, char **argv)
     data_t potential(NXlocal*NY); // [ii, jj] -> ii*NY + jj
 
     // set initial and boundary conditions
-    initial_conditions(potential, NXlocal, NY, pid, nproc);
+    boundary_conditions(potential, NXlocal, NY, pid, nproc);
     print_screen(potential, NXlocal, NY, pid, nproc);
     //boundary_conditions(potential, NX, NY);
 
@@ -98,6 +99,34 @@ void boundary_conditions(data_t & data, int nx, int ny)
     //for(int iy = ny/3; iy <= 2*ny/3; ++iy) {
     //    data[ix*ny + iy] = -50.0;
     //}
+}
+
+void boundary_conditions(data_t & data, int nx, int ny, int pid, int np)
+{
+  int ix, iy;
+    // first column
+    iy = 0;
+    for(int ix = 0; ix < nx; ++ix) {
+        data[ix*ny + iy] = 0.0;
+    }
+    // last column
+    iy = ny-1;
+    for(int ix = 0; ix < nx; ++ix) {
+        data[ix*ny + iy] = 0.0;
+    }
+    //first row
+    if(0 == pid){
+      ix = 0;
+      for(int iy = 0; iy < ny; ++iy) {
+        data[ix*ny + iy] = 100.0;
+      }
+    }
+    if(np-1 == pid){
+      ix = nx-1;
+      for(int iy = 0; iy < ny; ++iy) {
+        data[ix*ny + iy] = 0.0;
+      }
+    }
 }
 
 void evolve(data_t & data, int nx, int ny, int nsteps)

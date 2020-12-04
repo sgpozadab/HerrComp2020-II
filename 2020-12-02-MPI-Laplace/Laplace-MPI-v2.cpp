@@ -4,7 +4,7 @@
 
 const double DELTA = 0.1;
 const double XMIN = 0.0;
-const double XMAX = 1.0;
+const double XMAX = 1.6;
 const double YMIN = 0.0;
 const double YMAX = 1.0;
 const int NX = (XMAX-XMIN)/DELTA;
@@ -29,26 +29,24 @@ void print_screen(const data_t & data, int nx, int ny);
 int main(int argc, char **argv)
 {
     int pid = 0, nproc = 0;
-    // init mpi environment
+    
+       // init mpi environment
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &pid);
     MPI_Comm_size(MPI_COMM_WORLD, &nproc);
 
-    // declare data structures
+       // declare data structures
     int NXlocal = NX/nproc; // TODO: Faltan los ghosts
     data_t potential((NXlocal+2)*NY); // [ii, jj] -> ii*NY + jj
 
-    // set initial and boundary conditions
+       // set initial and boundary conditions
     //initial_conditions(potential, NXlocal, NY, pid, nproc);
     boundary_conditions(potential, NXlocal, NY, pid, nproc);
-    //print_screen(potential, NXlocal, NY, pid, nproc);
-    //relaxation_step(potential, NXlocal, NY, pid, nproc);
-    //print_screen(potential, NXlocal, NY, pid, nproc);
 
-    // evolve and print
+       // evolve and print
     evolve(potential, NXlocal, NY, NSTEPS, pid, nproc);
 
-    // close mpi environment
+       // close mpi environment
     MPI_Finalize();
 
     return 0;
@@ -69,12 +67,12 @@ void boundary_conditions(data_t & data, int nx, int ny, int pid, int np)
     // first column
     iy = 0;
     for(int ix = 0; ix < nx+2; ++ix) {
-        data[ix*ny + iy] = 1.0;
+        data[ix*ny + iy] = 0.0;
     }
     // last column
     iy = ny-1;
     for(int ix = 0; ix < nx+2; ++ix) {
-        data[ix*ny + iy] = 1.0;
+        data[ix*ny + iy] = 0.0;
     }
     //first row
     if(0 == pid){
@@ -87,7 +85,7 @@ void boundary_conditions(data_t & data, int nx, int ny, int pid, int np)
     if(np-1 == pid){
       ix = (nx+1)-1;
       for(int iy = 0; iy < ny; ++iy) {
-        data[ix*ny + iy] = 2.0;
+        data[ix*ny + iy] = 0.0;
       }
     }
 }

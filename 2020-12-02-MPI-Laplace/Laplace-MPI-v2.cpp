@@ -161,13 +161,13 @@ void print_screen(const data_t & data, int nx, int ny, int pid, int np)
     int tag = 0;
     if (0 == pid) {
         print_screen(data, nx, ny);
-        std::vector<double> buffer(nx*ny);
+        std::vector<double> buffer((nx+2)*ny);
         for (int src = 1; src < np; ++src) {
-            MPI_Recv(&buffer[0], nx*ny, MPI_DOUBLE, src, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+	    MPI_Recv(&buffer[0], (nx+2)*ny, MPI_DOUBLE, src, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             print_screen(buffer, nx, ny);
         }
     } else {
         int dest = 0;
-        MPI_Send(&data[0], nx*ny, MPI_DOUBLE, dest, tag, MPI_COMM_WORLD);
+        MPI_Send(&data[0], (nx+2)*ny, MPI_DOUBLE, dest, tag, MPI_COMM_WORLD);
     }
 }
